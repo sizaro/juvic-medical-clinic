@@ -1,0 +1,27 @@
+# Frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+*.tsbuildinfo
+frontend/.env*
+!frontend/.env.example
+
+# Backend
+backend/bin/
+backend/obj/
+backend/appsettings.Development.json
+.dotnet/
+
+# Environment and IDE
+.env
+.env.*
+!.env.example
+.vscode/
+.idea/
+*.user
+*.suo
+
+# Logs and OS files
+*.log
+.DS_Store
+Thumbs.db

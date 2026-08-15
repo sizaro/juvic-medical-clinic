@@ -1,0 +1,31 @@
+using System.Security.Claims;
+using JuvicClinic.Api.Data;
+using JuvicClinic.Api.Domain;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace JuvicClinic.Api.Features.Clinical;
+
+public record ObservationInput(string Name, string Value, string? Unit, string? Notes);
+public record AssessmentInput(decimal? Temperature, int? Systolic, int? Diastolic, int? PulseRate, int? RespiratoryRate, decimal? Weight, decimal? Height, string? Notes, List<ObservationInput>? Observations);
+public record DiagnosisInput(string Description, string? Notes, string? EvidenceUrl = null, string? EvidencePublicId = null, string? EvidenceMimeType = null, string? EvidenceOriginalName = null);
+public record VisitDocumentInput(string DocumentType, string Title, string FileUrl, string PublicId, string MimeType, string OriginalName, long FileSize);
+
+[Authorize(Roles="ADMIN,DOCTOR,NURSE"), ApiController, Route("api/clinical")]
+public sealed class ClinicalController(ClinicDbContext db) : ControllerBase
+{
+    private bool UserId(out Guid id)=>Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier),out id);
+    [HttpGet("assessment-queue")]
+    public async Task<object> Queue(CancellationToken ct) => await db.Visits.AsNoTracking().Where(v => v.Status == VisitStatus.OPEN || v.Status == VisitStatus.ACTIVE).OrderByDescending(v => v.StartedAt).Select(v => new { v.Id, v.VisitNumber, v.CareType, v.Reason, v.StartedAt, patient = new { v.Patient.Id, v.Patient.PatientNumber, v.Patient.FirstName, v.Patient.LastName }, assessmentStatus = v.Assessments.Any() ? "RECORDED" : "PENDING" }).ToListAsync(ct);
+    [HttpPost("visits/{visitId:guid}/assessments")]
+    public async Task<IActionResult> Assess(Guid visitId, AssessmentInput input, CancellationToken ct) { if(!UserId(out var userId))return Unauthorized(); if(!await db.Visits.AnyAsync(x=>x.Id==visitId&&(x.Status==VisitStatus.OPEN||x.Status==VisitStatus.ACTIVE),ct))return BadRequest(new{message="An active visit is required."}); var assessment=new Assessment{VisitId=visitId,Temperature=input.Temperature,Systolic=input.Systolic,Diastolic=input.Diastolic,PulseRate=input.PulseRate,RespiratoryRate=input.RespiratoryRate,Weight=input.Weight,Height=input.Height,Notes=input.Notes,RecordedById=userId}; assessment.Observations=input.Observations?.Where(x=>!string.IsNullOrWhiteSpace(x.Name)&&!string.IsNullOrWhiteSpace(x.Value)).Select(x=>new AssessmentObservation{Name=x.Name.Trim(),Value=x.Value.Trim(),Unit=x.Unit?.Trim(),Notes=x.Notes?.Trim()}).ToList()??[]; db.Assessments.Add(assessment);db.AuditLogs.Add(new AuditLog{UserId=userId,Action="CREATE",EntityType="Assessment",EntityId=assessment.Id.ToString()});await db.SaveChangesAsync(ct);return Created("",new{assessment.Id,assessment.VisitId,assessment.Temperature,assessment.Systolic,assessment.Diastolic,assessment.PulseRate,assessment.RespiratoryRate,assessment.Weight,assessment.Height,assessment.Notes,assessment.RecordedById,assessment.RecordedAt,observations=assessment.Observations.Select(x=>new{x.Id,x.Name,x.Value,x.Unit,x.Notes})}); }
+    [Authorize(Roles="ADMIN,DOCTOR"),HttpPost("visits/{visitId:guid}/diagnoses")]
+    public async Task<IActionResult> Diagnose(Guid visitId,DiagnosisInput input,CancellationToken ct){if(!UserId(out var userId))return Unauthorized();if(string.IsNullOrWhiteSpace(input.Description))return BadRequest(new{message="Diagnosis is required."});var diagnosis=new Diagnosis{VisitId=visitId,Description=input.Description.Trim(),Notes=input.Notes?.Trim(),EvidenceUrl=input.EvidenceUrl,EvidencePublicId=input.EvidencePublicId,EvidenceMimeType=input.EvidenceMimeType,EvidenceOriginalName=input.EvidenceOriginalName,DiagnosedById=userId};db.Diagnoses.Add(diagnosis);db.AuditLogs.Add(new AuditLog{UserId=userId,Action="CREATE",EntityType="Diagnosis",EntityId=diagnosis.Id.ToString()});await db.SaveChangesAsync(ct);return Created("",new{diagnosis.Id,diagnosis.VisitId,diagnosis.Description,diagnosis.Notes,diagnosis.EvidenceUrl,diagnosis.EvidenceMimeType,diagnosis.DiagnosedById,diagnosis.DiagnosedAt});}
+
+    [HttpGet("visits/{visitId:guid}/documents")]
+    public async Task<object> Documents(Guid visitId,CancellationToken ct)=>await db.VisitDocuments.AsNoTracking().Where(x=>x.VisitId==visitId).OrderByDescending(x=>x.CreatedAt).Select(x=>new{x.Id,x.DocumentType,x.Title,x.FileUrl,x.MimeType,x.OriginalName,x.FileSize,x.CreatedAt}).ToListAsync(ct);
+
+    [HttpPost("visits/{visitId:guid}/documents")]
+    public async Task<IActionResult> AddDocument(Guid visitId,VisitDocumentInput input,CancellationToken ct){if(!UserId(out var userId))return Unauthorized();if(!await db.Visits.AnyAsync(x=>x.Id==visitId,ct))return NotFound();if(string.IsNullOrWhiteSpace(input.FileUrl)||string.IsNullOrWhiteSpace(input.Title))return BadRequest(new{message="A title and uploaded file are required."});var document=new VisitDocument{VisitId=visitId,DocumentType=string.IsNullOrWhiteSpace(input.DocumentType)?"CLINICAL_FORM":input.DocumentType.Trim().ToUpperInvariant(),Title=input.Title.Trim(),FileUrl=input.FileUrl,PublicId=input.PublicId,MimeType=input.MimeType,OriginalName=input.OriginalName,FileSize=input.FileSize,UploadedById=userId};db.VisitDocuments.Add(document);db.AuditLogs.Add(new AuditLog{UserId=userId,Action="UPLOAD",EntityType="VisitDocument",EntityId=document.Id.ToString()});await db.SaveChangesAsync(ct);return Created("",new{document.Id,document.DocumentType,document.Title,document.FileUrl,document.MimeType,document.OriginalName,document.FileSize,document.CreatedAt});}
+}

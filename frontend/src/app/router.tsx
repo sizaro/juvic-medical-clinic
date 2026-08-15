@@ -1,0 +1,16 @@
+import {createBrowserRouter,Navigate} from 'react-router-dom';
+import LoginPage from '../features/auth/LoginPage';
+import {ProtectedRoute} from '../features/auth/auth';
+import BillingPage from '../features/billing/BillingPage';
+import AssessmentsPage from '../features/clinical/AssessmentsPage';
+import DashboardPage from '../features/dashboard/DashboardPage';
+import InventoryPage from '../features/inventory/InventoryPage';
+import MedicinesPage from '../features/medicines/MedicinesPage';
+import PatientDetailPage from '../features/patients/PatientDetailPage';
+import PatientsPage from '../features/patients/PatientsPage';
+import RegisterPatientPage from '../features/patients/RegisterPatientPage';
+import QuickSalesPage from '../features/retail-sales/QuickSalesPage';
+import SalesReportsPage from '../features/reports/SalesReportsPage';
+import DueTreatmentsPage from '../features/treatments/DueTreatmentsPage';
+import AppLayout from '../shared/layouts/AppLayout';
+export const router=createBrowserRouter([{path:'/login',element:<LoginPage/>},{path:'/',element:<ProtectedRoute><AppLayout/></ProtectedRoute>,children:[{index:true,element:<DashboardPage/>},{path:'patients',element:<PatientsPage/>},{path:'patients/new',element:<RegisterPatientPage/>},{path:'patients/:id',element:<PatientDetailPage/>},{path:'treatments',element:<DueTreatmentsPage/>},{path:'medicines',element:<MedicinesPage/>},{path:'inventory',element:<InventoryPage/>},{path:'quick-sales',element:<QuickSalesPage/>},{path:'sales-reports',element:<SalesReportsPage/>},{path:'billing',element:<BillingPage/>},{path:'assessments',element:<AssessmentsPage/>}]},{path:'*',element:<Navigate to="/" replace/>}]);

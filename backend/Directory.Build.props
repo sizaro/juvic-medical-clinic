@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <!-- This project does not use optional mobile/WebAssembly workloads. -->
+    <MSBuildEnableWorkloadResolver>false</MSBuildEnableWorkloadResolver>
+  </PropertyGroup>
+</Project>
