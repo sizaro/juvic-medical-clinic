@@ -36,6 +36,8 @@ Cloudinary__ApiSecret=<Cloudinary API secret>
 
 The first successful start applies EF Core migrations and creates the bootstrap doctor only if that email does not already exist. After the first successful login, set `Database__SeedOnStartup=false`; leave `Database__MigrateOnStartup=true` so future versioned migrations apply safely during startup.
 
+The API accepts Render's `postgresql://...` internal URL and converts it to the Npgsql connection-string format at startup. Keep the database and API in the same Render region and use the internal URL, not the external URL.
+
 Do not use the local `ChangeMe123!` accounts in production. They are created only in Development.
 
 ## 3. Deploy the React frontend on Vercel

@@ -13,9 +13,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
-var connection = builder.Configuration.GetConnectionString("Default") ?? throw new InvalidOperationException("ConnectionStrings:Default is required.");
+var configuredConnection = builder.Configuration.GetConnectionString("Default") ?? throw new InvalidOperationException("ConnectionStrings:Default is required.");
+var connection = NormalizePostgresConnectionString(configuredConnection);
 var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is required.");
 if (jwtKey.Length < 32) throw new InvalidOperationException("Jwt:Key must be at least 32 characters.");
 builder.Services.AddDbContext<ClinicDbContext>(o => o.UseNpgsql(connection));
@@ -37,3 +39,29 @@ await using (var scope = app.Services.CreateAsyncScope())
         await scope.ServiceProvider.GetRequiredService<ClinicDbContext>().Database.MigrateAsync();
 }
 app.Run();
+
+static string NormalizePostgresConnectionString(string configured)
+{
+    var value = configured.Trim().Trim('"', '\'');
+
+    if (!Uri.TryCreate(value, UriKind.Absolute, out var uri) ||
+        !string.Equals(uri.Scheme, "postgres", StringComparison.OrdinalIgnoreCase) &&
+        !string.Equals(uri.Scheme, "postgresql", StringComparison.OrdinalIgnoreCase))
+        return value;
+
+    var userInfo = uri.UserInfo.Split(':', 2);
+    if (userInfo.Length != 2)
+        throw new InvalidOperationException("The PostgreSQL URL must include a username and password.");
+
+    return new NpgsqlConnectionStringBuilder
+    {
+        Host = uri.Host,
+        Port = uri.IsDefaultPort ? 5432 : uri.Port,
+        Database = Uri.UnescapeDataString(uri.AbsolutePath.TrimStart('/')),
+        Username = Uri.UnescapeDataString(userInfo[0]),
+        Password = Uri.UnescapeDataString(userInfo[1]),
+        Pooling = true,
+        Timeout = 15,
+        CommandTimeout = 30,
+    }.ConnectionString;
+}
