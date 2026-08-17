@@ -1,6 +1,106 @@
-import {useQuery} from '@tanstack/react-query';
-import {Link} from 'react-router-dom';
-import {api} from '../../shared/services/api';
-import {useAuth} from '../auth/auth';
-const money=(n:number=0)=>`UGX ${n.toLocaleString()}`;
-export default function DashboardPage(){const {user}=useAuth();const summary=useQuery({queryKey:['dashboard'],queryFn:async()=>(await api.get('/dashboard')).data});const cards=[['Patients today',summary.data?.patientsToday],['Treatments due',summary.data?.treatmentsDue],['Current inpatients',summary.data?.currentInpatients],['Low stock items',summary.data?.lowStockItems]];return <div className="space-y-6"><header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm font-semibold uppercase tracking-wider text-brand-700">{user?.role} workspace</p><h1 className="text-3xl font-bold">Good day, {user?.firstName}</h1><p className="mt-1 text-slate-500">Current clinic and pharmacy activity from the operational database.</p></div><Link className="btn-primary" to="/quick-sales">Record quick medicine sale</Link></header>{summary.isError&&<div className="rounded-xl bg-red-50 p-4 text-sm text-red-700">Dashboard information could not be loaded.</div>}<section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{cards.map(([label,value])=><article className="card" key={label}><p className="text-sm text-slate-500">{label}</p><strong className="mt-2 block text-3xl">{summary.isLoading?'…':value??0}</strong></article>)}</section><section className="grid gap-4 sm:grid-cols-3"><article className="card"><p className="text-sm text-slate-500">Walk-in medicine sales today</p><strong className="mt-2 block text-2xl">{money(summary.data?.retailSalesToday)}</strong><p className="text-xs text-slate-500">{summary.data?.retailTransactionsToday??0} transactions</p></article><article className="card bg-emerald-50"><p className="text-sm text-emerald-700">Gross profit today</p><strong className="mt-2 block text-2xl text-emerald-800">{money(summary.data?.retailProfitToday)}</strong></article><Link className="card flex flex-col justify-center hover:border-brand-300" to="/sales-reports"><strong>Open sales and profit reports</strong><span className="text-sm text-slate-500">Daily, weekly, monthly and yearly</span></Link></section><section className="grid gap-5 xl:grid-cols-2"><article className="card"><h2 className="text-lg font-bold">Due treatments</h2><p className="mt-4 text-sm text-slate-500">{summary.data?.treatmentsDue?`${summary.data.treatmentsDue} treatment administrations require attention.`:'No treatments are due now.'}</p></article><article className="card"><h2 className="text-lg font-bold">Recent walk-in sales</h2>{summary.data?.recentSales?.map((x:any)=><div className="flex justify-between border-b py-2 text-sm" key={x.id}><span>{x.saleNumber} · {x.itemCount} items</span><strong>{money(x.totalAmount)}</strong></div>)}{!summary.data?.recentSales?.length&&<p className="mt-4 text-sm text-slate-500">No medicine sales recorded yet.</p>}</article></section></div>}
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
+import { api } from "../../shared/services/api";
+import { useAuth } from "../auth/auth";
+const money = (n: number = 0) => `UGX ${n.toLocaleString()}`;
+export default function DashboardPage() {
+  const { user } = useAuth();
+  const summary = useQuery({
+    queryKey: ["dashboard"],
+    queryFn: async () => (await api.get("/dashboard")).data,
+  });
+  const cards = [
+    ["Patients today", summary.data?.patientsToday],
+    ["Treatments due", summary.data?.treatmentsDue],
+    ["Current inpatients", summary.data?.currentInpatients],
+    ["Low stock items", summary.data?.lowStockItems],
+  ];
+  return (
+    <div className="space-y-6">
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-wider text-brand-700">
+            {user?.role} workspace
+          </p>
+          <h1 className="text-3xl font-bold">Good day, {user?.firstName}</h1>
+          <p className="mt-1 text-slate-500">
+            Current clinic and pharmacy activity from the operational database.
+          </p>
+        </div>
+        <Link className="btn-primary" to="/quick-sales">
+          Record quick medicine sale
+        </Link>
+      </header>
+      {summary.isError && (
+        <div className="rounded-xl bg-red-50 p-4 text-sm text-red-700">
+          Dashboard information could not be loaded.
+        </div>
+      )}
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {cards.map(([label, value]) => (
+          <article className="card" key={label}>
+            <p className="text-sm text-slate-500">{label}</p>
+            <strong className="mt-2 block text-3xl">
+              {summary.isLoading ? "…" : (value ?? 0)}
+            </strong>
+          </article>
+        ))}
+      </section>
+      <section className="grid gap-4 sm:grid-cols-3">
+        <article className="card">
+          <p className="text-sm text-slate-500">Walk-in medicine sales today</p>
+          <strong className="mt-2 block text-2xl">
+            {money(summary.data?.retailSalesToday)}
+          </strong>
+          <p className="text-xs text-slate-500">
+            {summary.data?.retailTransactionsToday ?? 0} transactions
+          </p>
+        </article>
+        <article className="card bg-emerald-50">
+          <p className="text-sm text-emerald-700">Gross profit today</p>
+          <strong className="mt-2 block text-2xl text-emerald-800">
+            {money(summary.data?.retailProfitToday)}
+          </strong>
+        </article>
+        <Link
+          className="card flex flex-col justify-center hover:border-brand-300"
+          to="/sales-reports"
+        >
+          <strong>Open sales and profit reports</strong>
+          <span className="text-sm text-slate-500">
+            Daily, weekly, monthly and yearly
+          </span>
+        </Link>
+      </section>
+      <section className="grid gap-5 xl:grid-cols-2">
+        <article className="card">
+          <h2 className="text-lg font-bold">Due treatments</h2>
+          <p className="mt-4 text-sm text-slate-500">
+            {summary.data?.treatmentsDue
+              ? `${summary.data.treatmentsDue} treatment administrations require attention.`
+              : "No treatments are due now."}
+          </p>
+        </article>
+        <article className="card">
+          <h2 className="text-lg font-bold">Recent walk-in sales</h2>
+          {summary.data?.recentSales?.map((x: any) => (
+            <div
+              className="flex justify-between border-b py-2 text-sm"
+              key={x.id}
+            >
+              <span>
+                {x.saleNumber} · {x.itemCount} items
+              </span>
+              <strong>{money(x.totalAmount)}</strong>
+            </div>
+          ))}
+          {!summary.data?.recentSales?.length && (
+            <p className="mt-4 text-sm text-slate-500">
+              No medicine sales recorded yet.
+            </p>
+          )}
+        </article>
+      </section>
+    </div>
+  );
+}
