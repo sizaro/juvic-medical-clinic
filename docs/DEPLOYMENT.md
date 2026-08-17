@@ -21,7 +21,7 @@ ConnectionStrings__Default=<Render Internal Database URL>
 Jwt__Key=<a random secret at least 64 characters long>
 Jwt__Issuer=JuvicClinic.Api
 Jwt__Audience=JuvicClinic.Frontend
-AllowedOrigins__0=https://<your-vercel-project>.vercel.app
+FRONTEND_ORIGIN=https://<your-vercel-project>.vercel.app
 Database__MigrateOnStartup=true
 Database__SeedOnStartup=true
 BootstrapUser__Email=<doctor email>
@@ -37,6 +37,8 @@ Cloudinary__ApiSecret=<Cloudinary API secret>
 The first successful start applies EF Core migrations and creates the bootstrap doctor only if that email does not already exist. After the first successful login, set `Database__SeedOnStartup=false`; leave `Database__MigrateOnStartup=true` so future versioned migrations apply safely during startup.
 
 The API accepts Render's `postgresql://...` internal URL and converts it to the Npgsql connection-string format at startup. Keep the database and API in the same Render region and use the internal URL, not the external URL.
+
+`FRONTEND_ORIGIN` is the simplest configuration for one Vercel production site. Multiple origins can still be configured with `AllowedOrigins__0`, `AllowedOrigins__1`, and so on. Do not include a trailing slash.
 
 Do not use the local `ChangeMe123!` accounts in production. They are created only in Development.
 
