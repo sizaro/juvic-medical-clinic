@@ -21,7 +21,7 @@ export default function QuickSalesPage() {
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [proof, setProof] = useState<UploadedAsset | null>(null);
-  const medicines = useQuery({ queryKey: ['medicines', 'quick-sale'], queryFn: async () => (await api.get('/medicines', { params: { pageSize: 100 } })).data.data });
+  const medicines = useQuery({ queryKey: ['medicines', 'quick-sale'], queryFn: async () => (await api.get('/medicines', { params: { pageSize: 100, inStockOnly: true } })).data.data });
   const recent = useQuery({ queryKey: ['retail-sales'], queryFn: async () => (await api.get('/retail-sales', { params: { pageSize: 10 } })).data });
   const total = useMemo(() => lines.reduce((sum, x) => sum + (Number(x.quantity) || 0) * (Number(x.unitPrice) || 0), 0), [lines]);
   const update = (key: string, patch: Partial<Line>) => setLines(xs => xs.map(x => x.key === key ? { ...x, ...patch } : x));

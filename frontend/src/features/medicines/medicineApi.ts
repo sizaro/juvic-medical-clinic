@@ -1,6 +1,6 @@
 import { api } from '../../shared/services/api';
 
-export type InitialBatchInput={batchNumber:string;supplier?:string;quantity:number;unitCost:number;sellingPrice:number;expiryDate:string};
+export type InitialBatchInput={batchNumber?:string;supplier?:string;quantity:number;unitCost:number;sellingPrice:number;expiryDate:string};
 export type Medicine = { id:string; name:string; genericName?:string; strength?:string; form:string; unit:string; minimumStockLevel:number; defaultSellingPrice?:number;imageUrl?:string;imagePublicId?:string;imageMimeType?:string; isActive:boolean; totalStock:number; activeBatches:number };
 export type MedicineInput = { name:string; genericName?:string; strength?:string; form:string; unit:string; minimumStockLevel:number; defaultSellingPrice?:number;imageUrl?:string;imagePublicId?:string;imageMimeType?:string;initialBatch?:InitialBatchInput; isActive:boolean };
 export type MedicineDetails = Medicine & { batches:Array<{id:string;batchNumber?:string;supplier?:string;quantityReceived:number;quantityRemaining:number;unitCost:number;sellingPrice:number;expiryDate?:string;receivedAt:string;isActive:boolean}> };
