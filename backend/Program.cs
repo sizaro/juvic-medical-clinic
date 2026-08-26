@@ -1,13 +1,14 @@
 using System.Text;
 using System.Text.Json.Serialization;
-using JuvicClinic.Api.Data;
-using JuvicClinic.Api.Domain;
-using JuvicClinic.Api.Features.Auth;
-using JuvicClinic.Api.Features.Patients;
-using JuvicClinic.Api.Features.Medicines;
-using JuvicClinic.Api.Features.Treatments;
-using JuvicClinic.Api.Features.Uploads;
-using JuvicClinic.Api.Features.RetailSales;
+using ClinicManagement.Api.Data;
+using ClinicManagement.Api.Data.Seeding;
+using ClinicManagement.Api.Domain;
+using ClinicManagement.Api.Features.Auth;
+using ClinicManagement.Api.Features.Patients;
+using ClinicManagement.Api.Features.Medicines;
+using ClinicManagement.Api.Features.Treatments;
+using ClinicManagement.Api.Features.Uploads;
+using ClinicManagement.Api.Features.RetailSales;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -23,12 +24,12 @@ var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationExcep
 if (jwtKey.Length < 32) throw new InvalidOperationException("Jwt:Key must be at least 32 characters.");
 builder.Services.AddDbContext<ClinicDbContext>(o => o.UseNpgsql(connection));
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
-builder.Services.AddScoped<AuthService>(); builder.Services.AddScoped<PatientsService>(); builder.Services.AddScoped<MedicinesService>(); builder.Services.AddScoped<TreatmentsService>(); builder.Services.AddScoped<RetailSalesService>(); builder.Services.AddScoped<DatabaseSeeder>(); builder.Services.AddHttpClient<UploadService>();
+builder.Services.AddScoped<AuthService>(); builder.Services.AddScoped<PatientsService>(); builder.Services.AddScoped<MedicinesService>(); builder.Services.AddScoped<TreatmentsService>(); builder.Services.AddScoped<RetailSalesService>(); builder.Services.AddScoped<ClinicSettingsSeeder>(); builder.Services.AddScoped<RolesSeeder>(); builder.Services.AddScoped<UsersSeeder>(); builder.Services.AddScoped<ReferenceDataSeeder>(); builder.Services.AddScoped<DatabaseSeeder>(); builder.Services.AddHttpClient<UploadService>();
 builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter())); builder.Services.AddHealthChecks();
 builder.Services.AddCors(o => o.AddDefaultPolicy(p => p.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod()));
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o => o.TokenValidationParameters = new TokenValidationParameters { ValidateIssuer = true, ValidIssuer = builder.Configuration["Jwt:Issuer"], ValidateAudience = true, ValidAudience = builder.Configuration["Jwt:Audience"], ValidateLifetime = true, ValidateIssuerSigningKey = true, IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)), ClockSkew = TimeSpan.FromMinutes(1) });
 builder.Services.AddAuthorization(); builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(o => { o.SwaggerDoc("v1", new OpenApiInfo { Title = "JUVIC Clinic API", Version = "v1" }); o.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme { In = ParameterLocation.Header, Name = "Authorization", Type = SecuritySchemeType.Http, Scheme = "bearer", BearerFormat = "JWT" }); o.AddSecurityRequirement(new OpenApiSecurityRequirement { [new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } }] = [] }); });
+builder.Services.AddSwaggerGen(o => { o.SwaggerDoc("v1", new OpenApiInfo { Title = "Medical Clinic API", Version = "v1" }); o.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme { In = ParameterLocation.Header, Name = "Authorization", Type = SecuritySchemeType.Http, Scheme = "bearer", BearerFormat = "JWT" }); o.AddSecurityRequirement(new OpenApiSecurityRequirement { [new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } }] = [] }); });
 var app = builder.Build();
 app.Logger.LogInformation("Allowed CORS origins: {Origins}", string.Join(", ", allowedOrigins));
 app.UseExceptionHandler("/error"); if (app.Environment.IsDevelopment()) { app.UseSwagger(); app.UseSwaggerUI(); }

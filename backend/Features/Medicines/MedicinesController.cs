@@ -2,7 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace JuvicClinic.Api.Features.Medicines;
+namespace ClinicManagement.Api.Features.Medicines;
 
 [Authorize, ApiController, Route("api/medicines")]
 public sealed class MedicinesController(MedicinesService service) : ControllerBase

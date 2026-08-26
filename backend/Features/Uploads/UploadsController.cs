@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace JuvicClinic.Api.Features.Uploads;
+namespace ClinicManagement.Api.Features.Uploads;
 
 [Authorize, ApiController, Route("api/uploads")]
 public sealed class UploadsController(UploadService service) : ControllerBase

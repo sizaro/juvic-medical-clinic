@@ -15,7 +15,7 @@
 
 ### Docker development (recommended)
 
-From the repository root run `docker compose up --build`. PostgreSQL is exposed on port `5434`, the API on `5080`, and data remains in the named `juvic_postgres_data` volume.
+From the repository root run `docker compose up --build`. PostgreSQL is exposed on port `5434`, the API on `5080`, and data remains in the configured Docker volume.
 
 ## Frontend
 
@@ -24,9 +24,9 @@ From the repository root run `docker compose up --build`. PostgreSQL is exposed 
 
 Development seed credentials are printed in this document only for local use after seeding:
 
-- doctor@juvic.local / ChangeMe123!
-- nurse@juvic.local / ChangeMe123!
-- cashier@juvic.local / ChangeMe123!
+- doctor@clinic.local / ChangeMe123!
+- nurse@clinic.local / ChangeMe123!
+- cashier@clinic.local / ChangeMe123!
 
 Change or remove all seeded credentials before trial deployment.
 

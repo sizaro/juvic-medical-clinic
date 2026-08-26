@@ -1,8 +1,8 @@
-using JuvicClinic.Api.Data;
-using JuvicClinic.Api.Domain;
+using ClinicManagement.Api.Data;
+using ClinicManagement.Api.Domain;
 using Microsoft.EntityFrameworkCore;
 
-namespace JuvicClinic.Api.Features.Patients;
+namespace ClinicManagement.Api.Features.Patients;
 
 public record KinInput(string FirstName, string LastName, string Relationship, string Phone, string? AlternativePhone, string? Address, bool IsPrimary);
 public record InitialVisitDocumentInput(string DocumentType, string Title, string FileUrl, string PublicId, string MimeType, string OriginalName, long FileSize);

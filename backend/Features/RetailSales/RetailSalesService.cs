@@ -1,8 +1,8 @@
-using JuvicClinic.Api.Data;
-using JuvicClinic.Api.Domain;
+using ClinicManagement.Api.Data;
+using ClinicManagement.Api.Domain;
 using Microsoft.EntityFrameworkCore;
 
-namespace JuvicClinic.Api.Features.RetailSales;
+namespace ClinicManagement.Api.Features.RetailSales;
 
 public record RetailSaleItemInput(Guid MedicineId, Guid BatchId, decimal Quantity, decimal? UnitPrice);
 public record CreateRetailSaleRequest(List<RetailSaleItemInput> Items, decimal AmountReceived, PaymentMethod PaymentMethod, string? PaymentReference, string? CustomerName, string? CustomerPhone, DateTime? SoldAt, string? PaymentProofUrl, string? PaymentProofPublicId, string? ReceiptDocumentUrl, string? ReceiptDocumentPublicId);
@@ -28,8 +28,9 @@ public sealed class RetailSalesService(ClinicDbContext db)
             batch.QuantityRemaining -= requested.Quantity; batch.UpdatedAt = DateTime.UtcNow;
             db.StockTransactions.Add(new StockTransaction { MedicineId = batch.MedicineId, MedicineBatchId = batch.Id, Type = MovementType.SALE, QuantityChange = -requested.Quantity, BalanceAfter = batch.QuantityRemaining, Reason = $"Walk-in sale {sale.SaleNumber}", ReferenceType = "RetailSale", ReferenceId = sale.Id, PerformedById = userId });
         }
-        if (input.AmountReceived > sale.TotalAmount) throw new ArgumentException($"Amount received cannot exceed the sale total of UGX {sale.TotalAmount:N0}.");
-        if (input.AmountReceived < sale.TotalAmount) throw new ArgumentException($"Walk-in sales must be fully paid. UGX {sale.TotalAmount - input.AmountReceived:N0} is still required.");
+        var currency = await db.ClinicSettings.AsNoTracking().Where(x => x.IsActive).Select(x => x.Currency).FirstOrDefaultAsync(ct) ?? "UGX";
+        if (input.AmountReceived > sale.TotalAmount) throw new ArgumentException($"Amount received cannot exceed the sale total of {currency} {sale.TotalAmount:N0}.");
+        if (input.AmountReceived < sale.TotalAmount) throw new ArgumentException($"Walk-in sales must be fully paid. {currency} {sale.TotalAmount - input.AmountReceived:N0} is still required.");
         sale.AmountReceived = input.AmountReceived;
         db.RetailSales.Add(sale); db.AuditLogs.Add(new AuditLog { UserId = userId, Action = "CREATE", EntityType = "RetailSale", EntityId = sale.Id.ToString(), NewValues = System.Text.Json.JsonSerializer.Serialize(input) });
         await db.SaveChangesAsync(ct); await tx.CommitAsync(ct);

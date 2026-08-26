@@ -1,11 +1,11 @@
 using System.Security.Claims;
-using JuvicClinic.Api.Data;
-using JuvicClinic.Api.Domain;
+using ClinicManagement.Api.Data;
+using ClinicManagement.Api.Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace JuvicClinic.Api.Features.Billing;
+namespace ClinicManagement.Api.Features.Billing;
 
 public record ReceivePaymentRequest(decimal Amount, PaymentMethod Method, string? Reference, DateTime? ReceivedAt,
     string? PaymentProofUrl = null, string? PaymentProofPublicId = null, string? PaymentProofMimeType = null, string? PaymentProofOriginalName = null,
@@ -49,8 +49,9 @@ public sealed class BillingController(ClinicDbContext db) : ControllerBase
         if (bill is null) return NotFound();
         if (bill.Status == "CANCELLED") return Conflict(new { message = "Cancelled bills cannot receive payment." });
         var balance = bill.TotalAmount - bill.PaidAmount;
+        var currency = await db.ClinicSettings.AsNoTracking().Where(x => x.IsActive).Select(x => x.Currency).FirstOrDefaultAsync(ct) ?? "UGX";
         if (balance <= 0) return BadRequest(new { message = "This bill has no outstanding balance." });
-        if (input.Amount > balance) return BadRequest(new { message = $"Payment cannot exceed the outstanding balance of UGX {balance:N0}." });
+        if (input.Amount > balance) return BadRequest(new { message = $"Payment cannot exceed the outstanding balance of {currency} {balance:N0}." });
         var payment = new Payment { ReceiptNumber = $"RCT-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..7].ToUpperInvariant()}", BillId = bill.Id, Amount = input.Amount, Method = input.Method, Reference = input.Reference?.Trim(), ReceivedAt = (input.ReceivedAt ?? DateTime.UtcNow).ToUniversalTime(), ReceivedById = userId, PaymentProofUrl = input.PaymentProofUrl, PaymentProofPublicId = input.PaymentProofPublicId, PaymentProofMimeType = input.PaymentProofMimeType, PaymentProofOriginalName = input.PaymentProofOriginalName, ReceiptDocumentUrl = input.ReceiptDocumentUrl, ReceiptDocumentPublicId = input.ReceiptDocumentPublicId, ReceiptDocumentMimeType = input.ReceiptDocumentMimeType, ReceiptDocumentOriginalName = input.ReceiptDocumentOriginalName };
         db.Payments.Add(payment); bill.PaidAmount += input.Amount; bill.Status = bill.PaidAmount >= bill.TotalAmount ? "PAID" : "PARTIAL"; bill.UpdatedAt = DateTime.UtcNow;
         db.AuditLogs.Add(new AuditLog { UserId = userId, Action = "PAYMENT", EntityType = "Bill", EntityId = bill.Id.ToString(), NewValues = System.Text.Json.JsonSerializer.Serialize(input) });

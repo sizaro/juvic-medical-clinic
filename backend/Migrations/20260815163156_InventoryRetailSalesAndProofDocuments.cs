@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace JuvicClinic.Api.Migrations
+namespace ClinicManagement.Api.Migrations
 {
     /// <inheritdoc />
     public partial class InventoryRetailSalesAndProofDocuments : Migration

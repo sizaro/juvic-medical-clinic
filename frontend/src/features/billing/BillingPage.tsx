@@ -8,10 +8,12 @@ import DocumentUploader from '../../shared/components/DocumentUploader';
 import { api } from '../../shared/services/api';
 import type { UploadedAsset } from '../../shared/services/uploadService';
 import { useAuth } from '../auth/auth';
+import { formatClinicMoney, useClinicMoney } from '../settings/clinicSettings';
 
-const money = (n: number = 0) => `UGX ${n.toLocaleString()}`;
+const money = formatClinicMoney;
 
 export default function BillingPage() {
+  const money = useClinicMoney();
   const { user } = useAuth();
   const qc = useQueryClient();
   const [search, setSearch] = useState('');

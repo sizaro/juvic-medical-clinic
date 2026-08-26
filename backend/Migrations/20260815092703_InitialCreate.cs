@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace JuvicClinic.Api.Migrations
+namespace ClinicManagement.Api.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration

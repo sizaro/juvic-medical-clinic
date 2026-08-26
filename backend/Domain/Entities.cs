@@ -1,4 +1,4 @@
-namespace JuvicClinic.Api.Domain;
+namespace ClinicManagement.Api.Domain;
 
 public enum StaffRole { ADMIN, DOCTOR, NURSE, CASHIER }
 public enum CareType { OUTPATIENT, INPATIENT }
@@ -8,6 +8,7 @@ public enum MovementType { PURCHASE, SALE, TREATMENT, ADJUSTMENT, RETURN }
 public enum PaymentMethod { CASH, MOBILE_MONEY, BANK_TRANSFER, CARD, OTHER }
 
 public abstract class Entity { public Guid Id { get; set; } = Guid.NewGuid(); public DateTime CreatedAt { get; set; } = DateTime.UtcNow; public DateTime UpdatedAt { get; set; } = DateTime.UtcNow; }
+public sealed class ClinicSetting : Entity { public string ClinicName { get; set; } = "Medical Clinic"; public string ShortName { get; set; } = "Clinic"; public string? LogoUrl { get; set; } public string? Phone { get; set; } public string? Email { get; set; } public string? Address { get; set; } public string Currency { get; set; } = "UGX"; public string Timezone { get; set; } = "Africa/Kampala"; public string? PrimaryContact { get; set; } public string? ReceiptFooter { get; set; } public bool IsActive { get; set; } = true; }
 public sealed class Role : Entity { public StaffRole Name { get; set; } public ICollection<User> Users { get; set; } = []; }
 public sealed class User : Entity { public Guid RoleId { get; set; } public Role Role { get; set; } = null!; public string FirstName { get; set; } = ""; public string LastName { get; set; } = ""; public string? Phone { get; set; } public string Email { get; set; } = ""; public string PasswordHash { get; set; } = ""; public bool IsActive { get; set; } = true; public DateTime? LastLoginAt { get; set; } }
 public sealed class Patient : Entity { public string PatientNumber { get; set; } = ""; public string FirstName { get; set; } = ""; public string? MiddleName { get; set; } public string LastName { get; set; } = ""; public DateOnly DateOfBirth { get; set; } public string Sex { get; set; } = ""; public string PrimaryPhone { get; set; } = ""; public string? AlternativePhone { get; set; } public string? Email { get; set; } public string Address { get; set; } = ""; public string? Nin { get; set; } public string? Occupation { get; set; } public string? BloodGroup { get; set; } public bool IsActive { get; set; } = true; public ICollection<NextOfKin> NextOfKin { get; set; } = []; public ICollection<Visit> Visits { get; set; } = []; }

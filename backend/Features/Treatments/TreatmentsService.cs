@@ -1,5 +1,5 @@
-using JuvicClinic.Api.Data; using JuvicClinic.Api.Domain; using Microsoft.EntityFrameworkCore;
-namespace JuvicClinic.Api.Features.Treatments;
+using ClinicManagement.Api.Data; using ClinicManagement.Api.Domain; using Microsoft.EntityFrameworkCore;
+namespace ClinicManagement.Api.Features.Treatments;
 public record TreatmentOrderInput(string TreatmentName,Guid? MedicineId,Guid? PreferredBatchId,string? Route,decimal DoseQuantity,int? FrequencyHours,int NumberOfDoses,decimal? ProcedureUnitPrice,string? Instructions);
 public record CreateTreatmentPlanRequest(DateTime StartsAt,string? Instructions,List<TreatmentOrderInput> Orders);
 public record AdministerDoseRequest(Guid? BatchId,decimal? QuantityUsed,string? Notes,DateTime? AdministeredAt);

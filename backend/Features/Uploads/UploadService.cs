@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
-namespace JuvicClinic.Api.Features.Uploads;
+namespace ClinicManagement.Api.Features.Uploads;
 
 public record UploadedAsset(string Url, string PublicId, string MimeType, string OriginalName, long Size, string ResourceType);
 
@@ -24,7 +24,7 @@ public sealed class UploadService(HttpClient http, IConfiguration config)
             throw new InvalidOperationException("Cloudinary is not configured. Set Cloudinary__CloudName, Cloudinary__ApiKey and Cloudinary__ApiSecret.");
 
         var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
-        var safeFolder = $"juvic-clinic/{Sanitize(folder)}";
+        var safeFolder = $"clinic-management/{Sanitize(folder)}";
         var parameters = new SortedDictionary<string, string>(StringComparer.Ordinal) { ["folder"] = safeFolder, ["timestamp"] = timestamp };
         if (isImage) parameters["transformation"] = "c_limit,w_1600,h_1600,q_auto:good";
         var signatureBase = string.Join("&", parameters.Select(x => $"{x.Key}={x.Value}")) + apiSecret;

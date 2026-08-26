@@ -2,7 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace JuvicClinic.Api.Features.RetailSales;
+namespace ClinicManagement.Api.Features.RetailSales;
 
 [Authorize(Roles = "ADMIN,DOCTOR,NURSE,CASHIER"), ApiController, Route("api/retail-sales")]
 public sealed class RetailSalesController(RetailSalesService service) : ControllerBase

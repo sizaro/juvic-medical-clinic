@@ -1,13 +1,13 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using JuvicClinic.Api.Data;
-using JuvicClinic.Api.Domain;
+using ClinicManagement.Api.Data;
+using ClinicManagement.Api.Domain;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
-namespace JuvicClinic.Api.Features.Auth;
+namespace ClinicManagement.Api.Features.Auth;
 
 public record LoginRequest(string Email, string Password);
 public record SessionUser(Guid Id, string FirstName, string LastName, string Email, StaffRole Role);

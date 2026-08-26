@@ -1,8 +1,8 @@
-using JuvicClinic.Api.Data;
-using JuvicClinic.Api.Domain;
+using ClinicManagement.Api.Data;
+using ClinicManagement.Api.Domain;
 using Microsoft.EntityFrameworkCore;
 
-namespace JuvicClinic.Api.Features.Medicines;
+namespace ClinicManagement.Api.Features.Medicines;
 
 public record InitialBatchRequest(string BatchNumber, string? Supplier, decimal Quantity, decimal UnitCost, decimal SellingPrice, DateOnly ExpiryDate);
 public record SaveMedicineRequest(string Name, string? GenericName, string? Strength, string Form, string Unit, decimal MinimumStockLevel, decimal? DefaultSellingPrice, bool IsActive = true, string? ImageUrl = null, string? ImagePublicId = null, string? ImageMimeType = null, InitialBatchRequest? InitialBatch = null);

@@ -1,10 +1,10 @@
-using JuvicClinic.Api.Data;
-using JuvicClinic.Api.Domain;
+using ClinicManagement.Api.Data;
+using ClinicManagement.Api.Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace JuvicClinic.Api.Features.Dashboard;
+namespace ClinicManagement.Api.Features.Dashboard;
 
 [Authorize, ApiController, Route("api/dashboard")]
 public sealed class DashboardController(ClinicDbContext db) : ControllerBase

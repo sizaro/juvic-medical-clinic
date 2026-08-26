@@ -6,12 +6,14 @@ import DocumentUploader from '../../shared/components/DocumentUploader';
 import { api } from '../../shared/services/api';
 import type { UploadedAsset } from '../../shared/services/uploadService';
 import { medicineApi } from '../medicines/medicineApi';
+import { formatClinicMoney, useClinicMoney } from '../settings/clinicSettings';
 
 type Line = { key: string; medicineId: string; batchId: string; quantity: number; unitPrice: number; availableQuantity: number; medicineName?: string; batchLabel?: string };
-const money = (n: number = 0) => `UGX ${n.toLocaleString()}`;
+const money = formatClinicMoney;
 const blank = (): Line => ({ key: crypto.randomUUID(), medicineId: '', batchId: '', quantity: 1, unitPrice: 0, availableQuantity: 0 });
 
 export default function QuickSalesPage() {
+  const money = useClinicMoney();
   const qc = useQueryClient();
   const [lines, setLines] = useState<Line[]>([blank()]);
   const [method, setMethod] = useState('CASH');

@@ -2,8 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { api } from "../../shared/services/api";
 import { useAuth } from "../auth/auth";
-const money = (n: number = 0) => `UGX ${n.toLocaleString()}`;
+import { useClinicMoney } from "../settings/clinicSettings";
 export default function DashboardPage() {
+  const money = useClinicMoney();
   const { user } = useAuth();
   const summary = useQuery({
     queryKey: ["dashboard"],

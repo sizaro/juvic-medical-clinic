@@ -1,11 +1,11 @@
 using System.Security.Claims;
-using JuvicClinic.Api.Data;
-using JuvicClinic.Api.Domain;
+using ClinicManagement.Api.Data;
+using ClinicManagement.Api.Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace JuvicClinic.Api.Features.Clinical;
+namespace ClinicManagement.Api.Features.Clinical;
 
 public record ObservationInput(string Name, string Value, string? Unit, string? Notes);
 public record AssessmentInput(decimal? Temperature, int? Systolic, int? Diastolic, int? PulseRate, int? RespiratoryRate, decimal? Weight, decimal? Height, string? Notes, List<ObservationInput>? Observations);

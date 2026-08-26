@@ -1,9 +1,9 @@
-using JuvicClinic.Api.Data;
+using ClinicManagement.Api.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 
-namespace JuvicClinic.Api.Features.Auth;
+namespace ClinicManagement.Api.Features.Auth;
 
 [ApiController, Route("api/auth")]
 public sealed class AuthController(AuthService service, ClinicDbContext db) : ControllerBase

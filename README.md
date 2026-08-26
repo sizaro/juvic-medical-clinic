@@ -1,6 +1,6 @@
-# JUVIC Medical Clinic
+# Clinic Management System
 
-Operational clinic management system for outpatient and inpatient care, treatment scheduling, pharmacy stock, billing, payments, expenses, and reporting.
+Reusable clinic management system for outpatient and inpatient care, treatment scheduling, pharmacy stock, billing, payments, expenses, and reporting. Each clinic deployment uses the same code with its own PostgreSQL database, Render API, Vercel frontend, users, and database-driven clinic identity.
 
 ## Applications
 
@@ -16,4 +16,4 @@ For a trial deployment, follow [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ## Architecture
 
-This is a modular monolith. Business features are isolated in the API and frontend while sharing one PostgreSQL database and one deployable backend.
+This is a modular monolith. Business features are isolated in the API and frontend while sharing one PostgreSQL database per clinic installation. Internal historical `ClinicManagement` namespace names are intentionally retained for now; no customer-facing identity depends on them.

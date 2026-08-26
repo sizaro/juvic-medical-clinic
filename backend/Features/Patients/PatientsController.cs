@@ -2,7 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace JuvicClinic.Api.Features.Patients;
+namespace ClinicManagement.Api.Features.Patients;
 
 [Authorize(Roles = "ADMIN,DOCTOR,NURSE,CASHIER"), ApiController, Route("api/patients")]
 public sealed class PatientsController(PatientsService service) : ControllerBase
