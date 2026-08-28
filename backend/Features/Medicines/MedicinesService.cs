@@ -46,6 +46,28 @@ public sealed class MedicinesService(ClinicDbContext db)
         db.AuditLogs.Add(new AuditLog { UserId = userId, Action = "UPDATE", EntityType = "Medicine", EntityId = id.ToString(), OldValues = old, NewValues = System.Text.Json.JsonSerializer.Serialize(request) }); await db.SaveChangesAsync(ct); return true;
     }
 
+    public async Task<bool> SetActiveAsync(Guid id, bool isActive, Guid userId, CancellationToken ct)
+    {
+        var medicine = await db.Medicines.SingleOrDefaultAsync(x => x.Id == id, ct);
+        if (medicine is null) return false;
+        if (medicine.IsActive == isActive) return true;
+
+        var oldValue = medicine.IsActive;
+        medicine.IsActive = isActive;
+        medicine.UpdatedAt = DateTime.UtcNow;
+        db.AuditLogs.Add(new AuditLog
+        {
+            UserId = userId,
+            Action = isActive ? "RESTORE" : "ARCHIVE",
+            EntityType = "Medicine",
+            EntityId = id.ToString(),
+            OldValues = System.Text.Json.JsonSerializer.Serialize(new { isActive = oldValue }),
+            NewValues = System.Text.Json.JsonSerializer.Serialize(new { isActive })
+        });
+        await db.SaveChangesAsync(ct);
+        return true;
+    }
+
     public async Task<object> AddBatchAsync(Guid medicineId, AddBatchRequest request, Guid userId, CancellationToken ct)
     {
         ValidateBatch(request.Quantity, request.UnitCost, request.SellingPrice, request.ExpiryDate);

@@ -28,6 +28,7 @@ services:
       Jwt__Issuer: ClinicManagement.Api
       Jwt__Audience: ClinicManagement.Frontend
       AllowedOrigins__0: http://localhost:5173
+      RESET_TRIAL_DATA: ${RESET_TRIAL_DATA:-false}
     ports:
       - "5080:8080"
     depends_on:

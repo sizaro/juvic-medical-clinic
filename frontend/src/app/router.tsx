@@ -6,7 +6,7 @@ import AssessmentsPage from '../features/clinical/AssessmentsPage';
 import DashboardPage from '../features/dashboard/DashboardPage';
 import InventoryPage from '../features/inventory/InventoryPage';
 import MedicinesPage from '../features/medicines/MedicinesPage';
-import PatientDetailPage from '../features/patients/PatientDetailPage';
+import PatientDetailPage from '../features/patients/PatientWorkflowPage';
 import PatientsPage from '../features/patients/PatientsPage';
 import RegisterPatientPage from '../features/patients/RegisterPatientPage';
 import QuickSalesPage from '../features/retail-sales/QuickSalesPage';

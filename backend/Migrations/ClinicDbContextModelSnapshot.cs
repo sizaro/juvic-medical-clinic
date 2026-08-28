@@ -587,6 +587,15 @@ namespace ClinicManagement.Api.Migrations
                     b.Property<string>("BloodGroup")
                         .HasColumnType("text");
 
+                    b.Property<string>("Allergies")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CurrentMedication")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MedicalConditions")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -1014,6 +1023,12 @@ namespace ClinicManagement.Api.Migrations
 
                     b.Property<Guid>("CreatedById")
                         .HasColumnType("uuid");
+
+                    b.Property<Guid?>("DischargedById")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("DischargeSummary")
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("ExpectedEndAt")
                         .HasColumnType("timestamp with time zone");

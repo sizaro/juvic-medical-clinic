@@ -20,7 +20,7 @@ export default function MedicineForm({ medicine, onSubmit, onCancel, busy }: { m
   const { clinic } = useClinicSettings();
   const [image, setImage] = useState<UploadedAsset | null>(medicine?.imageUrl ? { url: medicine.imageUrl, publicId: medicine.imagePublicId ?? '', mimeType: medicine.imageMimeType ?? 'image/jpeg', originalName: 'Medicine image', size: 0, resourceType: 'image' } : null);
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({
-    defaultValues: { name: '', genericName: '', strength: '', form: 'TABLET', unit: 'tablet', minimumStockLevel: 10, isActive: true, quantityPurchased: 1, purchasePrice: 0, sellingPrice: 0, expiryDate: '' },
+    defaultValues: { name: '', genericName: '', strength: '', form: 'TABLET', unit: 'tablet', minimumStockLevel: 10, isActive: true, quantityPurchased: undefined, purchasePrice: undefined, sellingPrice: undefined, expiryDate: '' },
   });
 
   useEffect(() => {
@@ -76,10 +76,10 @@ export default function MedicineForm({ medicine, onSubmit, onCancel, busy }: { m
     {!medicine && <section className="rounded-2xl border border-brand-100 bg-brand-50/60 p-4">
       <div className="flex items-start gap-3"><span className="rounded-xl bg-white p-2 text-brand-700 shadow-sm"><PackagePlus size={20}/></span><div><h3 className="font-bold">Stock available now</h3><p className="text-sm text-slate-600">Record what the clinic bought and the price for one unit.</p></div></div>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        <label className="text-sm font-medium">Quantity bought<input className="input mt-1" type="number" min="0.01" step="0.01" {...register('quantityPurchased', { valueAsNumber: true, required: 'Quantity is required', min: { value: 0.01, message: 'Quantity must be greater than zero' } })}/><span className="text-xs text-red-600">{errors.quantityPurchased?.message}</span></label>
+        <label className="text-sm font-medium">Quantity bought<input className="input mt-1" placeholder="0" type="number" min="0.01" step="0.01" {...register('quantityPurchased', { valueAsNumber: true, required: 'Quantity is required', min: { value: 0.01, message: 'Quantity must be greater than zero' } })}/><span className="text-xs text-red-600">{errors.quantityPurchased?.message}</span></label>
         <label className="text-sm font-medium">Expiry date<input className="input mt-1" type="date" min={tomorrow} {...register('expiryDate', { required: 'Expiry date is required' })}/><span className="text-xs text-red-600">{errors.expiryDate?.message}</span></label>
-        <label className="text-sm font-medium">Purchase price per unit ({clinic.currency})<input className="input mt-1" type="number" min="0" step="1" {...register('purchasePrice', { valueAsNumber: true, required: 'Purchase price is required', min: { value: 0, message: 'Price cannot be negative' } })}/><span className="text-xs text-red-600">{errors.purchasePrice?.message}</span></label>
-        <label className="text-sm font-medium">Selling price per unit ({clinic.currency})<input className="input mt-1" type="number" min="1" step="1" {...register('sellingPrice', { valueAsNumber: true, required: 'Selling price is required', min: { value: 1, message: 'Selling price must be greater than zero' } })}/><span className="text-xs text-red-600">{errors.sellingPrice?.message}</span></label>
+        <label className="text-sm font-medium">Purchase price per unit ({clinic.currency})<input className="input mt-1" placeholder="0" type="number" min="0" step="1" {...register('purchasePrice', { valueAsNumber: true, required: 'Purchase price is required', min: { value: 0, message: 'Price cannot be negative' } })}/><span className="text-xs text-red-600">{errors.purchasePrice?.message}</span></label>
+        <label className="text-sm font-medium">Selling price per unit ({clinic.currency})<input className="input mt-1" placeholder="0" type="number" min="1" step="1" {...register('sellingPrice', { valueAsNumber: true, required: 'Selling price is required', min: { value: 1, message: 'Selling price must be greater than zero' } })}/><span className="text-xs text-red-600">{errors.sellingPrice?.message}</span></label>
       </div>
     </section>}
 

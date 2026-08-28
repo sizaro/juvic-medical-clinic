@@ -24,7 +24,7 @@ var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationExcep
 if (jwtKey.Length < 32) throw new InvalidOperationException("Jwt:Key must be at least 32 characters.");
 builder.Services.AddDbContext<ClinicDbContext>(o => o.UseNpgsql(connection));
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
-builder.Services.AddScoped<AuthService>(); builder.Services.AddScoped<PatientsService>(); builder.Services.AddScoped<MedicinesService>(); builder.Services.AddScoped<TreatmentsService>(); builder.Services.AddScoped<RetailSalesService>(); builder.Services.AddScoped<ClinicSettingsSeeder>(); builder.Services.AddScoped<RolesSeeder>(); builder.Services.AddScoped<UsersSeeder>(); builder.Services.AddScoped<ReferenceDataSeeder>(); builder.Services.AddScoped<DatabaseSeeder>(); builder.Services.AddHttpClient<UploadService>();
+builder.Services.AddScoped<AuthService>(); builder.Services.AddScoped<PatientsService>(); builder.Services.AddScoped<MedicinesService>(); builder.Services.AddScoped<TreatmentsService>(); builder.Services.AddScoped<RetailSalesService>(); builder.Services.AddScoped<ClinicSettingsSeeder>(); builder.Services.AddScoped<RolesSeeder>(); builder.Services.AddScoped<UsersSeeder>(); builder.Services.AddScoped<ReferenceDataSeeder>(); builder.Services.AddScoped<DatabaseSeeder>();builder.Services.AddScoped<TrialDataResetService>(); builder.Services.AddHttpClient<UploadService>();
 builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter())); builder.Services.AddHealthChecks();
 builder.Services.AddCors(o => o.AddDefaultPolicy(p => p.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod()));
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o => o.TokenValidationParameters = new TokenValidationParameters { ValidateIssuer = true, ValidIssuer = builder.Configuration["Jwt:Issuer"], ValidateAudience = true, ValidAudience = builder.Configuration["Jwt:Audience"], ValidateLifetime = true, ValidateIssuerSigningKey = true, IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)), ClockSkew = TimeSpan.FromMinutes(1) });
@@ -40,6 +40,14 @@ await using (var scope = app.Services.CreateAsyncScope())
         await scope.ServiceProvider.GetRequiredService<DatabaseSeeder>().SeedAsync();
     else if (builder.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
         await scope.ServiceProvider.GetRequiredService<ClinicDbContext>().Database.MigrateAsync();
+}
+var resetTrialData = builder.Configuration.GetValue<bool>("RESET_TRIAL_DATA") ||
+                     args.Contains("--reset-trial-data",StringComparer.OrdinalIgnoreCase);
+if(resetTrialData)
+{
+    app.Logger.LogWarning("RESET_TRIAL_DATA is enabled. Trial business data will be removed while clinic settings, roles and staff logins are preserved.");
+    await using var resetScope=app.Services.CreateAsyncScope();
+    await resetScope.ServiceProvider.GetRequiredService<TrialDataResetService>().ResetAsync();
 }
 app.Run();
 
