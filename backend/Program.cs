@@ -167,7 +167,7 @@ app.Map(
 // Startup order:
 //
 // 1. Make sure the database schema exists.
-// 2. Check the runtime configuration values.
+// 2. Check runtime configuration.
 // 3. If RESET_TRIAL_DATA=true, clear trial data including users.
 // 4. Seed the database.
 // 5. Start the API.
@@ -177,14 +177,46 @@ app.Map(
 // accounts from the current environment configuration.
 // ------------------------------------------------------------
 
-app.Logger.LogWarning(
-    "CONFIG CHECK: RESET_TRIAL_DATA={ResetTrialData}, SeedOnStartup={SeedOnStartup}, MigrateOnStartup={MigrateOnStartup}",
-    builder.Configuration.GetValue<bool>("RESET_TRIAL_DATA"),
-    builder.Configuration.GetValue<bool>("Database:SeedOnStartup"),
-    builder.Configuration.GetValue<bool>("Database:MigrateOnStartup"));
+var runtimeResetTrialData =
+    builder.Configuration.GetValue<bool>("RESET_TRIAL_DATA");
+
+var runtimeSeedOnStartup =
+    builder.Configuration.GetValue<bool>(
+        "Database:SeedOnStartup");
+
+var runtimeMigrateOnStartup =
+    builder.Configuration.GetValue<bool>(
+        "Database:MigrateOnStartup");
+
+// ------------------------------------------------------------
+// TEMPORARY RUNTIME CONFIGURATION DIAGNOSTIC
+// ------------------------------------------------------------
+//
+// This deliberately uses Console.WriteLine instead of the
+// ASP.NET logger so we can see exactly what the Render process
+// receives from its environment.
+// ------------------------------------------------------------
+
+Console.WriteLine(
+    "============================================================");
+
+Console.WriteLine(
+    $"CONSOLE CONFIG CHECK: RESET_TRIAL_DATA={runtimeResetTrialData}");
+
+Console.WriteLine(
+    $"CONSOLE CONFIG CHECK: Database:SeedOnStartup={runtimeSeedOnStartup}");
+
+Console.WriteLine(
+    $"CONSOLE CONFIG CHECK: Database:MigrateOnStartup={runtimeMigrateOnStartup}");
+
+Console.WriteLine(
+    $"CONSOLE CONFIG CHECK: Environment={app.Environment.EnvironmentName}");
+
+Console.WriteLine(
+    "============================================================");
 
 var resetTrialData =
-    builder.Configuration.GetValue<bool>("RESET_TRIAL_DATA") ||
+    runtimeResetTrialData ||
     args.Contains(
         "--reset-trial-data",
         StringComparer.OrdinalIgnoreCase);
@@ -220,16 +252,13 @@ await using (var scope = app.Services.CreateAsyncScope())
 {
     if (
         app.Environment.IsDevelopment() ||
-        builder.Configuration.GetValue<bool>(
-            "Database:SeedOnStartup"))
+        runtimeSeedOnStartup)
     {
         await scope.ServiceProvider
             .GetRequiredService<DatabaseSeeder>()
             .SeedAsync();
     }
-    else if (
-        builder.Configuration.GetValue<bool>(
-            "Database:MigrateOnStartup"))
+    else if (runtimeMigrateOnStartup)
     {
         await scope.ServiceProvider
             .GetRequiredService<ClinicDbContext>()
