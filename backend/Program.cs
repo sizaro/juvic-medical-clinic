@@ -160,7 +160,6 @@ app.Map(
     () => Results.Problem(
         "The request could not be completed."));
 
-
 // ------------------------------------------------------------
 // DATABASE STARTUP
 // ------------------------------------------------------------
@@ -168,14 +167,21 @@ app.Map(
 // Startup order:
 //
 // 1. Make sure the database schema exists.
-// 2. If RESET_TRIAL_DATA=true, clear trial data including users.
-// 3. Seed the database.
-// 4. Start the API.
+// 2. Check the runtime configuration values.
+// 3. If RESET_TRIAL_DATA=true, clear trial data including users.
+// 4. Seed the database.
+// 5. Start the API.
 //
 // This ensures that when a trial reset is requested, the old
 // staff accounts are removed BEFORE UsersSeeder creates the
 // accounts from the current environment configuration.
 // ------------------------------------------------------------
+
+app.Logger.LogWarning(
+    "CONFIG CHECK: RESET_TRIAL_DATA={ResetTrialData}, SeedOnStartup={SeedOnStartup}, MigrateOnStartup={MigrateOnStartup}",
+    builder.Configuration.GetValue<bool>("RESET_TRIAL_DATA"),
+    builder.Configuration.GetValue<bool>("Database:SeedOnStartup"),
+    builder.Configuration.GetValue<bool>("Database:MigrateOnStartup"));
 
 var resetTrialData =
     builder.Configuration.GetValue<bool>("RESET_TRIAL_DATA") ||
@@ -206,7 +212,6 @@ if (resetTrialData)
         .ResetAsync();
 }
 
-
 // ------------------------------------------------------------
 // DATABASE MIGRATION / SEEDING
 // ------------------------------------------------------------
@@ -234,7 +239,6 @@ await using (var scope = app.Services.CreateAsyncScope())
 }
 
 app.Run();
-
 
 // ------------------------------------------------------------
 // CORS
@@ -277,7 +281,6 @@ static string[] ResolveAllowedOrigins(
         ? origins
         : ["http://localhost:5173"];
 }
-
 
 // ------------------------------------------------------------
 // POSTGRES CONNECTION STRING
