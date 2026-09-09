@@ -17,79 +17,332 @@ using Microsoft.OpenApi.Models;
 using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
-var configuredConnection = builder.Configuration.GetConnectionString("Default") ?? throw new InvalidOperationException("ConnectionStrings:Default is required.");
+
+var configuredConnection =
+    builder.Configuration.GetConnectionString("Default")
+    ?? throw new InvalidOperationException(
+        "ConnectionStrings:Default is required.");
+
 var connection = NormalizePostgresConnectionString(configuredConnection);
+
 var allowedOrigins = ResolveAllowedOrigins(builder.Configuration);
-var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is required.");
-if (jwtKey.Length < 32) throw new InvalidOperationException("Jwt:Key must be at least 32 characters.");
-builder.Services.AddDbContext<ClinicDbContext>(o => o.UseNpgsql(connection));
+
+var jwtKey =
+    builder.Configuration["Jwt:Key"]
+    ?? throw new InvalidOperationException("Jwt:Key is required.");
+
+if (jwtKey.Length < 32)
+    throw new InvalidOperationException(
+        "Jwt:Key must be at least 32 characters.");
+
+builder.Services.AddDbContext<ClinicDbContext>(o =>
+    o.UseNpgsql(connection));
+
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
-builder.Services.AddScoped<AuthService>(); builder.Services.AddScoped<PatientsService>(); builder.Services.AddScoped<MedicinesService>(); builder.Services.AddScoped<TreatmentsService>(); builder.Services.AddScoped<RetailSalesService>(); builder.Services.AddScoped<ClinicSettingsSeeder>(); builder.Services.AddScoped<RolesSeeder>(); builder.Services.AddScoped<UsersSeeder>(); builder.Services.AddScoped<ReferenceDataSeeder>(); builder.Services.AddScoped<DatabaseSeeder>();builder.Services.AddScoped<TrialDataResetService>(); builder.Services.AddHttpClient<UploadService>();
-builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter())); builder.Services.AddHealthChecks();
-builder.Services.AddCors(o => o.AddDefaultPolicy(p => p.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod()));
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o => o.TokenValidationParameters = new TokenValidationParameters { ValidateIssuer = true, ValidIssuer = builder.Configuration["Jwt:Issuer"], ValidateAudience = true, ValidAudience = builder.Configuration["Jwt:Audience"], ValidateLifetime = true, ValidateIssuerSigningKey = true, IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)), ClockSkew = TimeSpan.FromMinutes(1) });
-builder.Services.AddAuthorization(); builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(o => { o.SwaggerDoc("v1", new OpenApiInfo { Title = "Medical Clinic API", Version = "v1" }); o.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme { In = ParameterLocation.Header, Name = "Authorization", Type = SecuritySchemeType.Http, Scheme = "bearer", BearerFormat = "JWT" }); o.AddSecurityRequirement(new OpenApiSecurityRequirement { [new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } }] = [] }); });
+
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<PatientsService>();
+builder.Services.AddScoped<MedicinesService>();
+builder.Services.AddScoped<TreatmentsService>();
+builder.Services.AddScoped<RetailSalesService>();
+
+builder.Services.AddScoped<ClinicSettingsSeeder>();
+builder.Services.AddScoped<RolesSeeder>();
+builder.Services.AddScoped<UsersSeeder>();
+builder.Services.AddScoped<ReferenceDataSeeder>();
+builder.Services.AddScoped<DatabaseSeeder>();
+
+builder.Services.AddScoped<TrialDataResetService>();
+
+builder.Services.AddHttpClient<UploadService>();
+
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter()));
+
+builder.Services.AddHealthChecks();
+
+builder.Services.AddCors(o =>
+    o.AddDefaultPolicy(p =>
+        p.WithOrigins(allowedOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod()));
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(o =>
+        o.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+
+            ValidateLifetime = true,
+
+            ValidateIssuerSigningKey = true,
+
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtKey)),
+
+            ClockSkew = TimeSpan.FromMinutes(1)
+        });
+
+builder.Services.AddAuthorization();
+
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddSwaggerGen(o =>
+{
+    o.SwaggerDoc(
+        "v1",
+        new OpenApiInfo
+        {
+            Title = "Medical Clinic API",
+            Version = "v1"
+        });
+
+    o.AddSecurityDefinition(
+        "Bearer",
+        new OpenApiSecurityScheme
+        {
+            In = ParameterLocation.Header,
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT"
+        });
+
+    o.AddSecurityRequirement(
+        new OpenApiSecurityRequirement
+        {
+            [
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                }
+            ] = []
+        });
+});
+
 var app = builder.Build();
-app.Logger.LogInformation("Allowed CORS origins: {Origins}", string.Join(", ", allowedOrigins));
-app.UseExceptionHandler("/error"); if (app.Environment.IsDevelopment()) { app.UseSwagger(); app.UseSwaggerUI(); }
-app.UseCors(); app.UseAuthentication(); app.UseAuthorization(); app.MapControllers(); app.MapHealthChecks("/health"); app.Map("/error", () => Results.Problem("The request could not be completed."));
+
+app.Logger.LogInformation(
+    "Allowed CORS origins: {Origins}",
+    string.Join(", ", allowedOrigins));
+
+app.UseExceptionHandler("/error");
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseCors();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.MapHealthChecks("/health");
+
+app.Map(
+    "/error",
+    () => Results.Problem(
+        "The request could not be completed."));
+
+
+// ------------------------------------------------------------
+// DATABASE STARTUP
+// ------------------------------------------------------------
+//
+// Startup order:
+//
+// 1. Make sure the database schema exists.
+// 2. If RESET_TRIAL_DATA=true, clear trial data including users.
+// 3. Seed the database.
+// 4. Start the API.
+//
+// This ensures that when a trial reset is requested, the old
+// staff accounts are removed BEFORE UsersSeeder creates the
+// accounts from the current environment configuration.
+// ------------------------------------------------------------
+
+var resetTrialData =
+    builder.Configuration.GetValue<bool>("RESET_TRIAL_DATA") ||
+    args.Contains(
+        "--reset-trial-data",
+        StringComparer.OrdinalIgnoreCase);
+
+if (resetTrialData)
+{
+    app.Logger.LogWarning(
+        "RESET_TRIAL_DATA is enabled. " +
+        "The trial database will be reset before staff accounts " +
+        "are recreated from the current configuration.");
+
+    await using var resetScope =
+        app.Services.CreateAsyncScope();
+
+    var resetDb =
+        resetScope.ServiceProvider
+            .GetRequiredService<ClinicDbContext>();
+
+    // Ensure the database schema exists before attempting
+    // to delete trial data.
+    await resetDb.Database.MigrateAsync();
+
+    await resetScope.ServiceProvider
+        .GetRequiredService<TrialDataResetService>()
+        .ResetAsync();
+}
+
+
+// ------------------------------------------------------------
+// DATABASE MIGRATION / SEEDING
+// ------------------------------------------------------------
+
 await using (var scope = app.Services.CreateAsyncScope())
 {
-    if (app.Environment.IsDevelopment() || builder.Configuration.GetValue<bool>("Database:SeedOnStartup"))
-        await scope.ServiceProvider.GetRequiredService<DatabaseSeeder>().SeedAsync();
-    else if (builder.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
-        await scope.ServiceProvider.GetRequiredService<ClinicDbContext>().Database.MigrateAsync();
+    if (
+        app.Environment.IsDevelopment() ||
+        builder.Configuration.GetValue<bool>(
+            "Database:SeedOnStartup"))
+    {
+        await scope.ServiceProvider
+            .GetRequiredService<DatabaseSeeder>()
+            .SeedAsync();
+    }
+    else if (
+        builder.Configuration.GetValue<bool>(
+            "Database:MigrateOnStartup"))
+    {
+        await scope.ServiceProvider
+            .GetRequiredService<ClinicDbContext>()
+            .Database
+            .MigrateAsync();
+    }
 }
-var resetTrialData = builder.Configuration.GetValue<bool>("RESET_TRIAL_DATA") ||
-                     args.Contains("--reset-trial-data",StringComparer.OrdinalIgnoreCase);
-if(resetTrialData)
-{
-    app.Logger.LogWarning("RESET_TRIAL_DATA is enabled. Trial business data will be removed while clinic settings, roles and staff logins are preserved.");
-    await using var resetScope=app.Services.CreateAsyncScope();
-    await resetScope.ServiceProvider.GetRequiredService<TrialDataResetService>().ResetAsync();
-}
+
 app.Run();
 
-static string[] ResolveAllowedOrigins(IConfiguration configuration)
+
+// ------------------------------------------------------------
+// CORS
+// ------------------------------------------------------------
+
+static string[] ResolveAllowedOrigins(
+    IConfiguration configuration)
 {
-    var configured = configuration.GetSection("AllowedOrigins").Get<string[]>() ?? [];
-    var frontendOrigins = configuration["FRONTEND_ORIGIN"]?
-        .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
+    var configured =
+        configuration
+            .GetSection("AllowedOrigins")
+            .Get<string[]>() ?? [];
 
-    var origins = configured
-        .Concat(frontendOrigins)
-        .Select(origin => origin.Trim().TrimEnd('/'))
-        .Where(origin => Uri.TryCreate(origin, UriKind.Absolute, out var uri) &&
-                         (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
-        .Distinct(StringComparer.OrdinalIgnoreCase)
-        .ToArray();
+    var frontendOrigins =
+        configuration["FRONTEND_ORIGIN"]?
+            .Split(
+                ',',
+                StringSplitOptions.RemoveEmptyEntries |
+                StringSplitOptions.TrimEntries) ?? [];
 
-    return origins.Length > 0 ? origins : ["http://localhost:5173"];
+    var origins =
+        configured
+            .Concat(frontendOrigins)
+            .Select(origin =>
+                origin.Trim().TrimEnd('/'))
+            .Where(origin =>
+                Uri.TryCreate(
+                    origin,
+                    UriKind.Absolute,
+                    out var uri) &&
+                (
+                    uri.Scheme == Uri.UriSchemeHttp ||
+                    uri.Scheme == Uri.UriSchemeHttps
+                ))
+            .Distinct(
+                StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+    return origins.Length > 0
+        ? origins
+        : ["http://localhost:5173"];
 }
 
-static string NormalizePostgresConnectionString(string configured)
+
+// ------------------------------------------------------------
+// POSTGRES CONNECTION STRING
+// ------------------------------------------------------------
+
+static string NormalizePostgresConnectionString(
+    string configured)
 {
-    var value = configured.Trim().Trim('"', '\'');
+    var value =
+        configured
+            .Trim()
+            .Trim('"', '\'');
 
-    if (!Uri.TryCreate(value, UriKind.Absolute, out var uri) ||
-        !string.Equals(uri.Scheme, "postgres", StringComparison.OrdinalIgnoreCase) &&
-        !string.Equals(uri.Scheme, "postgresql", StringComparison.OrdinalIgnoreCase))
+    if (
+        !Uri.TryCreate(
+            value,
+            UriKind.Absolute,
+            out var uri) ||
+        (
+            !string.Equals(
+                uri.Scheme,
+                "postgres",
+                StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(
+                uri.Scheme,
+                "postgresql",
+                StringComparison.OrdinalIgnoreCase)
+        ))
+    {
         return value;
+    }
 
-    var userInfo = uri.UserInfo.Split(':', 2);
+    var userInfo =
+        uri.UserInfo.Split(':', 2);
+
     if (userInfo.Length != 2)
-        throw new InvalidOperationException("The PostgreSQL URL must include a username and password.");
+    {
+        throw new InvalidOperationException(
+            "The PostgreSQL URL must include a username and password.");
+    }
 
     return new NpgsqlConnectionStringBuilder
     {
         Host = uri.Host,
-        Port = uri.IsDefaultPort ? 5432 : uri.Port,
-        Database = Uri.UnescapeDataString(uri.AbsolutePath.TrimStart('/')),
-        Username = Uri.UnescapeDataString(userInfo[0]),
-        Password = Uri.UnescapeDataString(userInfo[1]),
+
+        Port = uri.IsDefaultPort
+            ? 5432
+            : uri.Port,
+
+        Database =
+            Uri.UnescapeDataString(
+                uri.AbsolutePath.TrimStart('/')),
+
+        Username =
+            Uri.UnescapeDataString(
+                userInfo[0]),
+
+        Password =
+            Uri.UnescapeDataString(
+                userInfo[1]),
+
         Pooling = true,
+
         Timeout = 15,
-        CommandTimeout = 30,
+
+        CommandTimeout = 30
     }.ConnectionString;
 }
